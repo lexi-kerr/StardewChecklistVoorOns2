@@ -1,0 +1,2249 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stardew Valley - Community Center Checklist (Per Seizoen)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3e9d2;
+            background-image: radial-gradient(#e4d5b7 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: #3b2618;
+        }
+
+        /* Stardew houten & perkamenten stijlen */
+        .wood-header {
+            background: linear-gradient(180deg, #7a4b2a 0%, #5c361c 100%);
+            border: 3px solid #3d2210;
+            box-shadow: 0 4px 0 #3d2210, 0 8px 16px rgba(0, 0, 0, 0.25);
+        }
+
+        .parchment-card {
+            background-color: #fffaf0;
+            border: 2px solid #c9ad7f;
+            box-shadow: 0 3px 0 #b89865, 0 4px 10px rgba(59, 38, 24, 0.08);
+        }
+
+        .item-row {
+            transition: all 0.15s ease;
+        }
+
+        .item-row:hover {
+            background-color: #fef3d6;
+            transform: translateX(2px);
+        }
+
+        .item-checked {
+            background-color: #eef5e8 !important;
+            opacity: 0.72;
+        }
+
+        .item-checked .item-title {
+            text-decoration: line-through;
+            color: #6b7280;
+        }
+
+        /* Custom checkbox */
+        .stardew-checkbox {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border: 2px solid #8c5a32;
+            border-radius: 6px;
+            background-color: #fffdf9;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.15s ease;
+        }
+
+        .stardew-checkbox:checked {
+            background-color: #4d9e39;
+            border-color: #2f6b20;
+        }
+
+        .stardew-checkbox:checked::after {
+            content: '✔';
+            color: white;
+            font-size: 14px;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        /* Zwevende Tooltip */
+        #hover-tooltip {
+            pointer-events: none;
+            transition: opacity 0.12s ease, transform 0.12s ease;
+            z-index: 9999;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e8dcc4;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #9c6b43;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #7a4b2a;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-16">
+
+    <!-- Header Banner -->
+    <header class="max-w-6xl mx-auto pt-6 px-4">
+        <div class="wood-header rounded-2xl p-5 sm:p-7 text-amber-50 relative overflow-hidden">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <div class="inline-flex items-center gap-2 bg-amber-950/60 border border-amber-500/40 rounded-full px-3 py-1 text-xs font-semibold text-amber-200 mb-2">
+                        <span>⭐</span> Stardew Valley — Standaard Bundles
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-amber-100 drop-shadow">
+                        Community Center Checklist
+                    </h1>
+                    <p class="text-amber-200/90 text-sm sm:text-base mt-1">
+                        Gesorteerd per seizoen. <strong class="text-amber-100">Beweeg je muis over een item</strong> (of tik erop) om precies te zien hoe je eraan komt!
+                    </p>
+                </div>
+
+                <!-- Totale voortgangsbox -->
+                <div class="bg-amber-950/70 border-2 border-amber-600/50 rounded-xl p-4 min-w-[240px]">
+                    <div class="flex justify-between items-center text-xs font-bold uppercase tracking-wider text-amber-300 mb-1">
+                        <span>Totale Voortgang</span>
+                    <div class="mt-2.5 flex flex-wrap justify-between items-center gap-2 text-xs text-amber-200/90">
+                        <span id="completed-bundles-text">0 / 30 bundles compleet</span>
+                        <div class="flex items-center gap-3">
+                            <button id="backup-btn" class="text-emerald-300 hover:text-emerald-200 underline font-semibold cursor-pointer">
+                                💾 Opslaan / Overzetten
+                            </button>
+                            <button id="reset-btn" class="text-rose-300 hover:text-rose-200 underline font-medium cursor-pointer">
+                                Reset alles
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Filter & Zoekbalk -->
+    <section class="max-w-6xl mx-auto px-4 mt-5">
+        <div class="parchment-card rounded-2xl p-4 flex flex-col lg:flex-row gap-3 justify-between items-stretch lg:items-center">
+            
+            <!-- Seizoen Tabs -->
+            <div class="flex flex-wrap gap-1.5" id="season-tabs">
+                <button data-season="all" class="season-tab active-tab px-3.5 py-2 rounded-xl text-sm font-bold transition cursor-pointer bg-[#5c361c] text-amber-50 shadow-sm">
+                    🌍 Alle Seizoenen
+                </button>
+                <button data-season="spring" class="season-tab px-3.5 py-2 rounded-xl text-sm font-bold transition cursor-pointer bg-pink-100 hover:bg-pink-200 text-pink-900 border border-pink-300">
+                    🌸 Lente
+                </button>
+                <button data-season="summer" class="season-tab px-3.5 py-2 rounded-xl text-sm font-bold transition cursor-pointer bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300">
+                    ☀️ Zomer
+                </button>
+                <button data-season="fall" class="season-tab px-3.5 py-2 rounded-xl text-sm font-bold transition cursor-pointer bg-orange-100 hover:bg-orange-200 text-orange-900 border border-orange-300">
+                    🍂 Herfst
+                </button>
+                <button data-season="winter" class="season-tab px-3.5 py-2 rounded-xl text-sm font-bold transition cursor-pointer bg-sky-100 hover:bg-sky-200 text-sky-900 border border-sky-300">
+                    ❄️ Winter
+                </button>
+                <button data-season="any" class="season-tab px-3.5 py-2 rounded-xl text-sm font-bold transition cursor-pointer bg-purple-100 hover:bg-purple-200 text-purple-900 border border-purple-300">
+                    ⏳ Hele Jaar / Overig
+                </button>
+            </div>
+
+            <!-- Zoeken & Verberg afgevinkte items -->
+            <div class="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center">
+                <div class="relative flex-1 sm:w-56">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-amber-800/60 text-sm">🔍</span>
+                    <input type="text" id="search-input" placeholder="Zoek item of bundle..." 
+                        class="w-full pl-9 pr-3 py-2 rounded-xl border border-[#c9ad7f] bg-[#fffdf9] text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+
+                <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-[#c9ad7f] bg-[#fffdf9] text-sm font-medium cursor-pointer select-none hover:bg-amber-50">
+                    <input type="checkbox" id="hide-completed-toggle" class="stardew-checkbox !w-4 !h-4">
+                    <span>Verberg afgevinkt</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Tip / Uitleg Banner -->
+        <div class="mt-3 px-4 py-2.5 rounded-xl bg-amber-100/80 border border-amber-300 text-xs sm:text-sm text-amber-950 flex flex-wrap items-center justify-between gap-2">
+            <div>
+                💡 <strong>Handig om te weten:</strong> Items die in meerdere seizoenen voorkomen staan bij het <strong>eerste seizoen</strong> waarin je ze kunt krijgen (met labels voor de andere seizoenen). Bij keuze-bundles (zoals <em>Artisan</em>: 6 van de 12) kleurt de bundle groen zodra je genoeg items hebt!
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content: Seizoen Secties -->
+    <main id="checklist-container" class="max-w-6xl mx-auto px-4 mt-6 space-y-8">
+        <!-- Wordt dynamisch gevuld via JavaScript -->
+    </main>
+
+    <!-- Zwevende Tooltip Element -->
+    <div id="hover-tooltip" class="fixed opacity-0 hidden max-w-xs sm:max-w-sm bg-[#2b1a0e] text-amber-50 border-2 border-[#e09f3e] rounded-xl p-3.5 shadow-2xl">
+        <div class="flex items-start justify-between gap-2 border-b border-amber-700/60 pb-2 mb-2">
+            <div>
+                <h4 id="tt-title" class="font-bold text-amber-300 text-base leading-tight">Item Naam</h4>
+                <p id="tt-subtitle" class="text-xs text-amber-200/80 mt-0.5">Kamer • Bundle</p>
+            </div>
+            <span id="tt-season-badge" class="text-[11px] font-bold px-2 py-0.5 rounded-md bg-amber-800 text-amber-100 whitespace-nowrap">Seizoen</span>
+        </div>
+        <div class="space-y-1.5 text-xs sm:text-sm leading-relaxed">
+            <p id="tt-how" class="text-amber-50"></p>
+            <div id="tt-extra" class="text-xs text-amber-300/90 bg-amber-950/80 rounded-lg p-2 border border-amber-800/60"></div>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Modal voor Reset -->
+    <div id="reset-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50">
+        <div class="parchment-card rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <h3 class="text-lg font-extrabold text-[#3b2618]">Voortgang resetten?</h3>
+            <p class="text-sm text-[#5c3a21] mt-2">
+                Weet je zeker dat je alle afgevinkte Community Center items wilt wissen? Dit kan niet ongedaan worden gemaakt.
+            </p>
+            <div class="mt-5 flex justify-end gap-2.5">
+                <button id="cancel-reset-btn" class="px-4 py-2 rounded-xl border border-[#c9ad7f] bg-white hover:bg-amber-50 text-sm font-semibold cursor-pointer">
+                    Annuleren
+                </button>
+                <button id="confirm-reset-btn" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold cursor-pointer">
+                    Ja, wis alles
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal voor Voortgang Opslaan / Overzetten -->
+    <div id="backup-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50">
+        <div class="parchment-card rounded-2xl max-w-lg w-full p-6 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-[#c9ad7f] pb-3">
+                <h3 class="text-lg font-extrabold text-[#3b2618]">💾 Voortgang Opslaan & Overzetten</h3>
+                <button id="close-backup-btn" class="text-stone-500 hover:text-stone-800 font-bold text-lg px-2 cursor-pointer">✕</button>
+            </div>
+            <p class="text-xs sm:text-sm text-[#5c3a21] mt-3 leading-relaxed">
+                Op <strong>GitHub Pages</strong> worden je vinkjes automatisch bewaard in je browser. Gebruik onderstaande code om een back-up te maken, je lijst over te zetten naar een ander apparaat, of om hem te bewaren als je Google Sites gebruikt.
+            </p>
+
+            <!-- Stap 1: Kopieer code -->
+            <div class="mt-4">
+                <label class="block text-xs font-bold uppercase tracking-wider text-[#5c3a21] mb-1">
+                    1. Jouw huidige voortgangscode:
+                </label>
+                <div class="flex gap-2">
+                    <input type="text" id="export-code-input" readonly 
+                        class="flex-1 px-3 py-2 rounded-xl border border-[#c9ad7f] bg-amber-50/70 text-xs font-mono text-stone-700 focus:outline-none">
+                    <button id="copy-code-btn" class="px-3.5 py-2 rounded-xl bg-[#4d9e39] hover:bg-[#3f852e] text-white text-xs font-bold whitespace-nowrap cursor-pointer transition">
+                        📋 Kopieer
+                    </button>
+                </div>
+                <p id="copy-feedback" class="text-xs text-emerald-700 font-semibold mt-1 hidden">✔ Code gekopieerd naar je klembord!</p>
+            </div>
+
+            <!-- Stap 2: Plak code -->
+            <div class="mt-4 pt-4 border-t border-[#e3d2b4]">
+                <label class="block text-xs font-bold uppercase tracking-wider text-[#5c3a21] mb-1">
+                    2. Voortgang herstellen vanuit code:
+                </label>
+                <div class="flex gap-2">
+                    <input type="text" id="import-code-input" placeholder="Plak hier een opgeslagen code..." 
+                        class="flex-1 px-3 py-2 rounded-xl border border-[#c9ad7f] bg-white text-xs font-mono focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    <button id="import-code-btn" class="px-3.5 py-2 rounded-xl bg-[#7a4b2a] hover:bg-[#5c361c] text-white text-xs font-bold whitespace-nowrap cursor-pointer transition">
+                        📥 Laden
+                    </button>
+                </div>
+                <p id="import-feedback" class="text-xs font-semibold mt-1 hidden"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Volledige dataset van alle standaard Stardew Valley Community Center items,
+         * ingedeeld op primair/eerste seizoen en voorzien van gedetailleerde Nederlandse uitleg.
+         */
+        const BUNDLES_META = {
+            // Crafts Room
+            "Spring Foraging": { room: "Crafts Room", required: 4, total: 4, reward: "Spring Seeds (30x)" },
+            "Summer Foraging": { room: "Crafts Room", required: 3, total: 3, reward: "Summer Seeds (30x)" },
+            "Fall Foraging": { room: "Crafts Room", required: 4, total: 4, reward: "Fall Seeds (30x)" },
+            "Winter Foraging": { room: "Crafts Room", required: 4, total: 4, reward: "Winter Seeds (30x)" },
+            "Construction": { room: "Crafts Room", required: 4, total: 4, reward: "Charcoal Kiln" },
+            "Exotic Foraging": { room: "Crafts Room", required: 5, total: 9, reward: "Autumn's Bounty (5x)" },
+
+            // Pantry
+            "Spring Crops": { room: "Pantry", required: 4, total: 4, reward: "Speed-Gro (20x)" },
+            "Summer Crops": { room: "Pantry", required: 4, total: 4, reward: "Quality Sprinkler" },
+            "Fall Crops": { room: "Pantry", required: 4, total: 4, reward: "Bee House" },
+            "Quality Crops": { room: "Pantry", required: 3, total: 4, reward: "Preserves Jar" },
+            "Animal": { room: "Pantry", required: 5, total: 6, reward: "Cheese Press" },
+            "Artisan": { room: "Pantry", required: 6, total: 12, reward: "Keg" },
+
+            // Fish Tank
+            "River Fish": { room: "Fish Tank", required: 4, total: 4, reward: "Bait (30x)" },
+            "Lake Fish": { room: "Fish Tank", required: 4, total: 4, reward: "Dressed Spinner" },
+            "Ocean Fish": { room: "Fish Tank", required: 4, total: 4, reward: "Warp Totem: Beach (5x)" },
+            "Night Fishing": { room: "Fish Tank", required: 3, total: 3, reward: "Small Glow Ring" },
+            "Crab Pot": { room: "Fish Tank", required: 5, total: 10, reward: "Crab Pot (3x)" },
+            "Specialty Fish": { room: "Fish Tank", required: 4, total: 4, reward: "Dish O' The Sea (5x)" },
+
+            // Boiler Room
+            "Blacksmith's": { room: "Boiler Room", required: 3, total: 3, reward: "Furnace" },
+            "Geologist's": { room: "Boiler Room", required: 4, total: 4, reward: "Omni Geode (5x)" },
+            "Adventurer's": { room: "Boiler Room", required: 2, total: 4, reward: "Small Magnet Ring" },
+
+            // Bulletin Board
+            "Chef's": { room: "Bulletin Board", required: 6, total: 6, reward: "Pink Cake (3x)" },
+            "Dye": { room: "Bulletin Board", required: 6, total: 6, reward: "Seed Maker" },
+            "Field Research": { room: "Bulletin Board", required: 4, total: 4, reward: "Recycling Machine" },
+            "Fodder": { room: "Bulletin Board", required: 3, total: 3, reward: "Heater" },
+            "Enchanter's": { room: "Bulletin Board", required: 4, total: 4, reward: "Gold Bar (5x)" },
+
+            // Vault
+            "2,500g": { room: "Vault", required: 1, total: 1, reward: "Chocolate Cake (3x)" },
+            "5,000g": { room: "Vault", required: 1, total: 1, reward: "Quality Fertilizer (30x)" },
+            "10,000g": { room: "Vault", required: 1, total: 1, reward: "Lightning Rod" },
+            "25,000g": { room: "Vault", required: 1, total: 1, reward: "Crystalarium" }
+        };
+
+        const ITEMS_DATA = [
+            // ==================== LENTE (SPRING) ====================
+            {
+                id: "wild-horseradish",
+                name: "Wild Horseradish",
+                dutchName: "Wilde mierikswortel",
+                season: "spring",
+                allSeasons: ["Lente"],
+                category: "Foraging",
+                bundle: "Spring Foraging",
+                how: "Vind je in het wild op de grond in de Lente (overal in Stardew Valley: Cindersap Forest, Mountains, Bus Stop, Backwoods).",
+                extra: "Kan ook groeien uit Spring Seeds."
+            },
+            {
+                id: "daffodil",
+                name: "Daffodil",
+                dutchName: "Narcis",
+                season: "spring",
+                allSeasons: ["Lente"],
+                category: "Foraging",
+                bundle: "Spring Foraging",
+                how: "Vind je in het wild in de Lente (vooral bij Bus Stop, Town en Mountains) of koop bij Pierre tijdens de Flower Dance (24 Lente).",
+                extra: "Kan ook groeien uit Spring Seeds."
+            },
+            {
+                id: "leek",
+                name: "Leek",
+                dutchName: "Prei",
+                season: "spring",
+                allSeasons: ["Lente"],
+                category: "Foraging",
+                bundle: "Spring Foraging",
+                how: "Vind je in het wild in de Lente, vooral bij de Mountains, Backwoods en Bus Stop.",
+                extra: "George is gek op Leeks!"
+            },
+            {
+                id: "dandelion",
+                name: "Dandelion",
+                dutchName: "Paardenbloem",
+                season: "spring",
+                allSeasons: ["Lente"],
+                category: "Foraging",
+                bundle: "Spring Foraging",
+                how: "Vind je in het wild in de Lente (Cindersap Forest, Bus Stop, Town) of koop bij Pierre tijdens de Flower Dance.",
+                extra: "Kan ook groeien uit Spring Seeds."
+            },
+            {
+                id: "parsnip",
+                name: "Parsnip",
+                dutchName: "Pastinaak",
+                season: "spring",
+                allSeasons: ["Lente"],
+                category: "Gewas",
+                bundle: "Spring Crops",
+                how: "Koop Parsnip Seeds bij Pierre's (20g) en plant ze in de Lente. Groeitijd: 4 dagen.",
+                extra: "Je krijgt 15 gratis Parsnip Seeds van Mayor Lewis op Dag 1!"
+            },
+            {
+                id: "green-bean",
+                name: "Green Bean",
+                dutchName: "Sperzieboon",
+                season: "spring",
+                allSeasons: ["Lente"],
+                category: "Gewas",
+                bundle: "Spring Crops",
+                how: "Koop Bean Starter bij Pierre's (60g) in de Lente. Groeitijd: 10 dagen, daarna elke 3 dagen opnieuw oogstbaar.",
+                extra: "Let op: groeit aan een klimrek (trellis), je kunt er niet doorheen lopen!"
+            },
+            {
+                id: "cauliflower",
+                name: "Cauliflower",
+                dutchName: "Bloemkool",
+                season: "spring",
+                allSeasons: ["Lente"],
+                category: "Gewas",
+                bundle: "Spring Crops",
+                how: "Koop Cauliflower Seeds bij Pierre's (80g) in de Lente. Groeitijd: 12 dagen.",
+                extra: "Plan op tijd: plant uiterlijk op 16 Lente om hem op tijd te oogsten."
+            },
+            {
+                id: "potato",
+                name: "Potato",
+                dutchName: "Aardappel",
+                season: "spring",
+                allSeasons: ["Lente"],
+                category: "Gewas",
+                bundle: "Spring Crops",
+                how: "Koop Potato Seeds bij Pierre's (50g) in de Lente. Groeitijd: 6 dagen.",
+                extra: "Geeft bij het oogsten soms extra aardappelen tegelijk."
+            },
+            {
+                id: "quality-parsnip",
+                name: "5x Gold-Star Parsnip",
+                dutchName: "5x Gouden ster Pastinaak",
+                season: "spring",
+                allSeasons: ["Lente"],
+                category: "Kwaliteitsgewas",
+                bundle: "Quality Crops",
+                how: "Oogst 5 Parsnips met gouden ster-kwaliteit in de Lente. Gebruik Basic Fertilizer (gemaakt van 2 Sap) voor veel hogere kans!",
+                extra: "Je hebt maar 3 van de 4 soorten nodig in de Quality Crops Bundle."
+            },
+            {
+                id: "morel",
+                name: "Morel",
+                dutchName: "Morielje (paddenstoel)",
+                season: "spring",
+                allSeasons: ["Lente"],
+                category: "Exotic Foraging",
+                bundle: "Exotic Foraging",
+                how: "Vind je in de Lente in de Secret Woods (vereist Steel Axe om de grote boomstam linksboven in Cindersap Forest weg te hakken) of in de Mushroom Cave.",
+                extra: "Keuzebundle: je hebt 5 van de 9 items nodig."
+            },
+            {
+                id: "sunfish",
+                name: "Sunfish",
+                dutchName: "Zonnebaars",
+                season: "spring",
+                allSeasons: ["Lente", "Zomer"],
+                category: "Vis",
+                bundle: "River Fish",
+                how: "Vang in de Rivier (Town of Cindersap Forest) in Lente of Zomer. Tijd: 06:00 – 19:00. Weer: Alleen bij zonnig/winderig weer (niet bij regen).",
+                extra: "Zeer makkelijke vis om te vangen!"
+            },
+            {
+                id: "catfish",
+                name: "Catfish",
+                dutchName: "Meerval",
+                season: "spring",
+                allSeasons: ["Lente", "Herfst"],
+                category: "Vis",
+                bundle: "River Fish",
+                how: "Vang in de Rivier (Town of Cindersap Forest) of Secret Woods tijdens REGEN in Lente of Herfst. Tijd: 06:00 – 00:00.",
+                extra: "Pittige vis! Gebruik eventueel Trout Soup (te koop bij Willy) voor +1 Fishing."
+            },
+            {
+                id: "shad",
+                name: "Shad",
+                dutchName: "Elft",
+                season: "spring",
+                allSeasons: ["Lente", "Zomer", "Herfst"],
+                category: "Vis",
+                bundle: "River Fish",
+                how: "Vang in de Rivier (Town of Cindersap Forest) tijdens REGEN in Lente, Zomer of Herfst. Tijd: 09:00 – 02:00.",
+                extra: "Komt in 3 seizoenen voor, zolang het maar regent."
+            },
+            {
+                id: "sardine",
+                name: "Sardine",
+                dutchName: "Sardine",
+                season: "spring",
+                allSeasons: ["Lente", "Herfst", "Winter"],
+                category: "Vis",
+                bundle: "Ocean Fish",
+                how: "Vang in de Oceaan (Beach) in Lente, Herfst of Winter. Tijd: 06:00 – 19:00. Weer: Elk weer.",
+                extra: "Niet te vangen in de Zomer."
+            },
+            {
+                id: "eel",
+                name: "Eel",
+                dutchName: "Paling",
+                season: "spring",
+                allSeasons: ["Lente", "Herfst"],
+                category: "Vis",
+                bundle: "Ocean Fish",
+                how: "Vang in de Oceaan (Beach) tijdens REGEN in Lente of Herfst. Tijd: 16:00 – 02:00 ('s avonds).",
+                extra: "Let op: alleen na 16:00 uur en alleen als het regent!"
+            },
+            {
+                id: "bream",
+                name: "Bream",
+                dutchName: "Brasem",
+                season: "spring",
+                allSeasons: ["Alle seizoenen"],
+                category: "Vis",
+                bundle: "Night Fishing",
+                how: "Vang in de Rivier (Town of Cindersap Forest) in elk seizoen. Tijd: 18:00 – 02:00 ('s avonds/'s nachts). Weer: Elk weer.",
+                extra: "Makkelijke nachtvis, het hele jaar door te vangen."
+            },
+            {
+                id: "largemouth-bass",
+                name: "Largemouth Bass",
+                dutchName: "Forelbaars",
+                season: "spring",
+                allSeasons: ["Alle seizoenen"],
+                category: "Vis",
+                bundle: "Lake Fish",
+                how: "Vang in het Mountain Lake (bij de mijn/Robin) in elk seizoen. Tijd: 06:00 – 19:00. Weer: Elk weer.",
+                extra: "Hele jaar door overdag in het bergmeer."
+            },
+            {
+                id: "carp",
+                name: "Carp",
+                dutchName: "Karper",
+                season: "spring",
+                allSeasons: ["Alle seizoenen"],
+                category: "Vis",
+                bundle: "Lake Fish",
+                how: "Vang in het Mountain Lake, Secret Woods of The Sewers in elk seizoen. Tijd: Elk tijdstip. Weer: Elk weer.",
+                extra: "De makkelijkste vis in de game, beweegt nauwelijks."
+            },
+            {
+                id: "bullhead",
+                name: "Bullhead",
+                dutchName: "Dwergmeerval",
+                season: "spring",
+                allSeasons: ["Alle seizoenen"],
+                category: "Vis",
+                bundle: "Lake Fish",
+                how: "Vang in het Mountain Lake in elk seizoen. Tijd: Elk tijdstip. Weer: Elk weer.",
+                extra: "Hele jaar door verkrijgbaar in het meer bij de mijn."
+            },
+            {
+                id: "woodskip",
+                name: "Woodskip",
+                dutchName: "Houtvis",
+                season: "spring",
+                allSeasons: ["Alle seizoenen"],
+                category: "Vis",
+                bundle: "Specialty Fish",
+                how: "Vang in de vijver van de Secret Woods (of op de Forest Farm) in elk seizoen. Tijd: Elk tijdstip. Weer: Elk weer.",
+                extra: "Vereist Steel Axe om de grote boomstam naar Secret Woods weg te hakken."
+            },
+            {
+                id: "apricot",
+                name: "Apricot",
+                dutchName: "Abrikoos",
+                season: "spring",
+                allSeasons: ["Lente"],
+                category: "Fruitboom",
+                bundle: "Artisan",
+                how: "Groeit aan een Apricot Tree in de Lente (boompje kost 2.000g bij Pierre's en duurt 28 dagen om te volgroeien) of kies de Fruit Bat Cave.",
+                extra: "Tip: Met de Fruit Bat Cave (via Demetrius) krijg je dit fruit gratis zonder dure bomen te kopen!"
+            },
+            {
+                id: "cherry",
+                name: "Cherry",
+                dutchName: "Kers",
+                season: "spring",
+                allSeasons: ["Lente"],
+                category: "Fruitboom",
+                bundle: "Artisan",
+                how: "Groeit aan een Cherry Tree in de Lente (boompje kost 3.400g bij Pierre's, 28 dagen groeitijd) of verschijnt in de Fruit Bat Cave.",
+                extra: "Keuzebundle: je hoeft niet per se alle fruitsoorten te hebben als je andere Artisan-items hebt."
+            },
+
+            // ==================== ZOMER (SUMMER) ====================
+            {
+                id: "grape",
+                name: "Grape",
+                dutchName: "Druif",
+                season: "summer",
+                allSeasons: ["Zomer", "Herfst"],
+                category: "Foraging / Gewas",
+                bundle: "Summer Foraging",
+                how: "Vind je in het wild op de grond in de Zomer (vooral Mountains, Backwoods, Bus Stop). In de Herfst kun je ook Grape Starters planten!",
+                extra: "Telt voor Summer Foraging Bundle (dus niet voor Fall Crops)."
+            },
+            {
+                id: "spice-berry",
+                name: "Spice Berry",
+                dutchName: "Specerijenbes",
+                season: "summer",
+                allSeasons: ["Zomer"],
+                category: "Foraging",
+                bundle: "Summer Foraging",
+                how: "Vind je in het wild in de Zomer (Cindersap Forest, Mountains, Bus Stop) of in de Fruit Bat Cave.",
+                extra: "Kan ook groeien uit Summer Seeds."
+            },
+            {
+                id: "sweet-pea",
+                name: "Sweet Pea",
+                dutchName: "Pronkerwt",
+                season: "summer",
+                allSeasons: ["Zomer"],
+                category: "Foraging",
+                bundle: "Summer Foraging",
+                how: "Vind je in het wild overal in de vallei tijdens de Zomer.",
+                extra: "Kan ook groeien uit Summer Seeds."
+            },
+            {
+                id: "tomato",
+                name: "Tomato",
+                dutchName: "Tomaat",
+                season: "summer",
+                allSeasons: ["Zomer"],
+                category: "Gewas",
+                bundle: "Summer Crops",
+                how: "Koop Tomato Seeds bij Pierre's (50g) in de Zomer. Groeitijd: 11 dagen, daarna elke 4 dagen opnieuw oogstbaar.",
+                extra: "Kan meerdere tomaten per oogst geven."
+            },
+            {
+                id: "hot-pepper",
+                name: "Hot Pepper",
+                dutchName: "Hete peper",
+                season: "summer",
+                allSeasons: ["Zomer"],
+                category: "Gewas",
+                bundle: "Summer Crops",
+                how: "Koop Pepper Seeds bij Pierre's (40g) in de Zomer. Groeitijd: 5 dagen, daarna elke 3 dagen opnieuw oogstbaar.",
+                extra: "Shane en Lewis zijn er dol op."
+            },
+            {
+                id: "blueberry",
+                name: "Blueberry",
+                dutchName: "Blauwe bes",
+                season: "summer",
+                allSeasons: ["Zomer"],
+                category: "Gewas",
+                bundle: "Summer Crops",
+                how: "Koop Blueberry Seeds bij Pierre's (80g) in de Zomer. Groeitijd: 13 dagen, daarna elke 4 dagen 3 bessen per struik.",
+                extra: "Een van de meest winstgevende zomergewassen!"
+            },
+            {
+                id: "melon",
+                name: "Melon",
+                dutchName: "Meloen",
+                season: "summer",
+                allSeasons: ["Zomer"],
+                category: "Gewas",
+                bundle: "Summer Crops",
+                how: "Koop Melon Seeds bij Pierre's (80g) in de Zomer. Groeitijd: 12 dagen.",
+                extra: "Plant er meerdere met kunstmest voor kans op gouden ster meloenen!"
+            },
+            {
+                id: "quality-melon",
+                name: "5x Gold-Star Melon",
+                dutchName: "5x Gouden ster Meloen",
+                season: "summer",
+                allSeasons: ["Zomer"],
+                category: "Kwaliteitsgewas",
+                bundle: "Quality Crops",
+                how: "Oogst 5 Melons met gouden ster-kwaliteit in de Zomer. Gebruik Basic of Quality Fertilizer op de grond vóór het planten.",
+                extra: "Je hebt 3 van de 4 soorten nodig in de Quality Crops Bundle."
+            },
+            {
+                id: "quality-corn",
+                name: "5x Gold-Star Corn",
+                dutchName: "5x Gouden ster Maïs",
+                season: "summer",
+                allSeasons: ["Zomer", "Herfst"],
+                category: "Kwaliteitsgewas",
+                bundle: "Quality Crops",
+                how: "Koop Corn Seeds bij Pierre's (150g). Groeit in Zomer én Herfst! Groeitijd: 14 dagen, daarna elke 4 dagen opnieuw oogstbaar.",
+                extra: "Omdat maïs 2 seizoenen blijft staan, heb je ruim de tijd om 5 gouden sterren te verzamelen."
+            },
+            {
+                id: "red-cabbage",
+                name: "Red Cabbage",
+                dutchName: "Rode kool",
+                season: "summer",
+                allSeasons: ["Zomer (Jaar 2+)"],
+                category: "Gewas / Bulletin Board",
+                bundle: "Dye",
+                how: "Zaden zijn normaal pas vanaf Jaar 2 te koop bij Pierre's (100g, 9 dagen groeitijd). In Jaar 1 kun je het soms kopen bij de Traveling Cart (vrijdag & zondag) of als drop van Serpents/Mummies.",
+                extra: "Vaak het laatste item dat spelers nodig hebben voor het Community Center!"
+            },
+            {
+                id: "sunflower",
+                name: "Sunflower",
+                dutchName: "Zonnebloem",
+                season: "summer",
+                allSeasons: ["Zomer", "Herfst"],
+                category: "Gewas / Bulletin Board",
+                bundle: "Dye",
+                how: "Koop Sunflower Seeds bij Pierre's (200g) of JojaMart (125g) in Zomer of Herfst. Groeitijd: 8 dagen.",
+                extra: "Geeft bij de oogst ook weer nieuwe zaden terug."
+            },
+            {
+                id: "poppy",
+                name: "Poppy",
+                dutchName: "Klaproos",
+                season: "summer",
+                allSeasons: ["Zomer"],
+                category: "Gewas / Bulletin Board",
+                bundle: "Chef's",
+                how: "Koop Poppy Seeds bij Pierre's (100g) in de Zomer. Groeitijd: 7 dagen.",
+                extra: "Nodig voor de Chef's Bundle in de Bulletin Board."
+            },
+            {
+                id: "fiddlehead-fern",
+                name: "Fiddlehead Fern",
+                dutchName: "Varenkrul",
+                season: "summer",
+                allSeasons: ["Zomer"],
+                category: "Foraging / Bulletin Board",
+                bundle: "Chef's",
+                how: "Vind je in de Zomer op de grond in de Secret Woods (vereist Steel Axe) of op prehistorische verdiepingen in Skull Cavern.",
+                extra: "Vergeet deze niet in de Zomer op te halen in Secret Woods!"
+            },
+            {
+                id: "red-mushroom",
+                name: "Red Mushroom",
+                dutchName: "Rode paddenstoel",
+                season: "summer",
+                allSeasons: ["Zomer", "Herfst", "Mines"],
+                category: "Foraging / Bulletin Board",
+                bundle: "Exotic Foraging & Dye",
+                how: "Te vinden in de Mines (vanaf verdieping 81+), in de Mushroom Cave, of in de Secret Woods in Zomer/Herfst.",
+                extra: "Let op: je hebt er 2 nodig als je hem voor zowel Exotic Foraging als Dye Bundle gebruikt."
+            },
+            {
+                id: "purple-mushroom",
+                name: "Purple Mushroom",
+                dutchName: "Paarse paddenstoel",
+                season: "summer",
+                allSeasons: ["Herfst", "Mines"],
+                category: "Foraging / Bulletin Board",
+                bundle: "Exotic Foraging & Field Research",
+                how: "Te vinden diep in de Mines (verdieping 81+), in de Mushroom Cave, of soms in het wild/Secret Woods in de Herfst.",
+                extra: "Tip: Kies de Mushroom Cave bij Demetrius voor makkelijke toegang tot zowel Red als Purple Mushrooms!"
+            },
+            {
+                id: "tilapia",
+                name: "Tilapia",
+                dutchName: "Tilapia",
+                season: "summer",
+                allSeasons: ["Zomer", "Herfst"],
+                category: "Vis",
+                bundle: "Ocean Fish",
+                how: "Vang in de Oceaan (Beach) in Zomer of Herfst. Tijd: 06:00 – 14:00 (alleen ochtend/vroege middag!). Weer: Elk weer.",
+                extra: "Let op de tijd: na 14:00 uur bijt hij niet meer."
+            },
+            {
+                id: "red-snapper",
+                name: "Red Snapper",
+                dutchName: "Rode snapper",
+                season: "summer",
+                allSeasons: ["Zomer", "Herfst"],
+                category: "Vis",
+                bundle: "Ocean Fish",
+                how: "Vang in de Oceaan (Beach) tijdens REGEN in Zomer of Herfst. Tijd: 06:00 – 19:00.",
+                extra: "Alleen te vangen als het regent!"
+            },
+            {
+                id: "tuna",
+                name: "Tuna",
+                dutchName: "Tonijn",
+                season: "summer",
+                allSeasons: ["Zomer", "Winter"],
+                category: "Vis",
+                bundle: "Ocean Fish",
+                how: "Vang in de Oceaan (Beach) in Zomer of Winter. Tijd: 06:00 – 19:00. Weer: Elk weer.",
+                extra: "Grote vis, komt in zowel Zomer als Winter voor."
+            },
+            {
+                id: "sturgeon",
+                name: "Sturgeon",
+                dutchName: "Steur",
+                season: "summer",
+                allSeasons: ["Zomer", "Winter"],
+                category: "Vis",
+                bundle: "Lake Fish",
+                how: "Vang in het Mountain Lake in Zomer of Winter. Tijd: 06:00 – 19:00. Weer: Elk weer.",
+                extra: "Beweegt snel op en neer; handig om later ook in een Fish Pond te doen voor Caviar!"
+            },
+            {
+                id: "pufferfish",
+                name: "Pufferfish",
+                dutchName: "Kogelvis",
+                season: "summer",
+                allSeasons: ["Zomer"],
+                category: "Vis",
+                bundle: "Specialty Fish",
+                how: "Vang in de Oceaan (Beach) in de Zomer tijdens ZONNIG weer. Tijd: 12:00 – 16:00 (alleen tussen de middag!).",
+                extra: "Ook regelmatig te koop bij de Traveling Cart (vrijdag/zondag in Cindersap Forest)."
+            },
+            {
+                id: "peach",
+                name: "Peach",
+                dutchName: "Perzik",
+                season: "summer",
+                allSeasons: ["Zomer"],
+                category: "Fruitboom",
+                bundle: "Artisan",
+                how: "Groeit aan een Peach Tree in de Zomer (boompje kost 6.000g bij Pierre's, 28 dagen groeitijd) of verschijnt in de Fruit Bat Cave.",
+                extra: "Keuzebundle (6 van de 12 nodig)."
+            },
+            {
+                id: "orange",
+                name: "Orange",
+                dutchName: "Sinaasappel",
+                season: "summer",
+                allSeasons: ["Zomer"],
+                category: "Fruitboom",
+                bundle: "Artisan",
+                how: "Groeit aan een Orange Tree in de Zomer (boompje kost 4.000g bij Pierre's, 28 dagen groeitijd) of verschijnt in de Fruit Bat Cave.",
+                extra: "Keuzebundle (6 van de 12 nodig)."
+            },
+
+            // ==================== HERFST (FALL) ====================
+            {
+                id: "common-mushroom",
+                name: "Common Mushroom",
+                dutchName: "Gewone paddenstoel",
+                season: "fall",
+                allSeasons: ["Herfst", "Lente (Secret Woods)"],
+                category: "Foraging",
+                bundle: "Fall Foraging",
+                how: "Vind je in het wild in de Herfst (overal in de vallei), in Secret Woods in Lente/Herfst, of in de Mushroom Cave.",
+                extra: "Kan ook groeien uit Fall Seeds."
+            },
+            {
+                id: "wild-plum",
+                name: "Wild Plum",
+                dutchName: "Wilde pruim",
+                season: "fall",
+                allSeasons: ["Herfst"],
+                category: "Foraging",
+                bundle: "Fall Foraging",
+                how: "Vind je in het wild in de Herfst (Mountains, Bus Stop, Railroad) of in de Fruit Bat Cave.",
+                extra: "Kan ook groeien uit Fall Seeds."
+            },
+            {
+                id: "hazelnut",
+                name: "Hazelnut",
+                dutchName: "Hazelnoot",
+                season: "fall",
+                allSeasons: ["Herfst"],
+                category: "Foraging",
+                bundle: "Fall Foraging",
+                how: "Vind je in het wild in de Herfst (vooral Mountains, Backwoods, Bus Stop) of door Maple Trees te schudden in de tweede helft van de Herfst.",
+                extra: "Kan ook groeien uit Fall Seeds."
+            },
+            {
+                id: "blackberry",
+                name: "Blackberry",
+                dutchName: "Braam",
+                season: "fall",
+                allSeasons: ["Herfst"],
+                category: "Foraging",
+                bundle: "Fall Foraging",
+                how: "Vind je op de grond in de Herfst of pluk ze van struiken tijdens het bessenseizoen (8 t/m 11 Herfst).",
+                extra: "Ook te vinden in de Fruit Bat Cave."
+            },
+            {
+                id: "corn",
+                name: "Corn",
+                dutchName: "Maïs",
+                season: "fall",
+                allSeasons: ["Zomer", "Herfst"],
+                category: "Gewas",
+                bundle: "Fall Crops",
+                how: "Koop Corn Seeds bij Pierre's (150g) in Zomer of Herfst. Groeitijd: 14 dagen, daarna elke 4 dagen opnieuw oogstbaar.",
+                extra: "Telt voor de Fall Crops Bundle (ook al kun je het al in de Zomer planten!)."
+            },
+            {
+                id: "eggplant",
+                name: "Eggplant",
+                dutchName: "Aubergine",
+                season: "fall",
+                allSeasons: ["Herfst"],
+                category: "Gewas",
+                bundle: "Fall Crops",
+                how: "Koop Eggplant Seeds bij Pierre's (20g) in de Herfst. Groeitijd: 5 dagen, daarna elke 5 dagen opnieuw oogstbaar.",
+                extra: "Goedkoop en groeit meerdere keren per seizoen."
+            },
+            {
+                id: "pumpkin",
+                name: "Pumpkin",
+                dutchName: "Pompoen",
+                season: "fall",
+                allSeasons: ["Herfst"],
+                category: "Gewas",
+                bundle: "Fall Crops",
+                how: "Koop Pumpkin Seeds bij Pierre's (100g) in de Herfst. Groeitijd: 13 dagen.",
+                extra: "Plant uiterlijk 15 Herfst om op tijd te oogsten."
+            },
+            {
+                id: "yam",
+                name: "Yam",
+                dutchName: "Zoete aardappel / Yam",
+                season: "fall",
+                allSeasons: ["Herfst"],
+                category: "Gewas",
+                bundle: "Fall Crops",
+                how: "Koop Yam Seeds bij Pierre's (60g) in de Herfst. Groeitijd: 10 dagen.",
+                extra: "Kan ook droppen van Duggies (verdieping 6-29 in de Mines)."
+            },
+            {
+                id: "quality-pumpkin",
+                name: "5x Gold-Star Pumpkin",
+                dutchName: "5x Gouden ster Pompoen",
+                season: "fall",
+                allSeasons: ["Herfst"],
+                category: "Kwaliteitsgewas",
+                bundle: "Quality Crops",
+                how: "Oogst 5 Pumpkins met gouden ster-kwaliteit in de Herfst. Gebruik Fertilizer en plant genoeg pompoenen.",
+                extra: "Als je Parsnip, Melon en Corn al hebt, heb je deze niet eens meer nodig (3 van de 4)!"
+            },
+            {
+                id: "tiger-trout",
+                name: "Tiger Trout",
+                dutchName: "Tijgerforel",
+                season: "fall",
+                allSeasons: ["Herfst", "Winter"],
+                category: "Vis",
+                bundle: "River Fish",
+                how: "Vang in de Rivier (Town of Cindersap Forest) in Herfst of Winter. Tijd: 06:00 – 19:00. Weer: Elk weer.",
+                extra: "Vrij snelle vis, gedraagt zich vergelijkbaar met een snoek/forel."
+            },
+            {
+                id: "walleye",
+                name: "Walleye",
+                dutchName: "Snoekbaars",
+                season: "fall",
+                allSeasons: ["Herfst", "Winter (Rain Totem)"],
+                category: "Vis",
+                bundle: "Night Fishing",
+                how: "Vang in de Rivier, Mountain Lake of Cindersap Forest vijver tijdens REGEN in de Herfst. Tijd: 12:00 – 02:00.",
+                extra: "Super belangrijk: in de Winter regent het normaal niet, dus vang deze op een regenachtige herfstdag!"
+            },
+            {
+                id: "apple",
+                name: "3x Apple",
+                dutchName: "3x Appel",
+                season: "fall",
+                allSeasons: ["Herfst"],
+                category: "Fruitboom / Bulletin Board",
+                bundle: "Fodder & Artisan",
+                how: "Groeit aan een Apple Tree in de Herfst (boompje kost 4.000g bij Pierre's, plant uiterlijk eind Zomer!) of verzamel via de Fruit Bat Cave.",
+                extra: "Let op: Je hebt 3 appels nodig voor de Fodder Bundle (Bulletin Board) en eventueel 1 voor de Artisan Bundle!"
+            },
+            {
+                id: "pomegranate",
+                name: "Pomegranate",
+                dutchName: "Granaatappel",
+                season: "fall",
+                allSeasons: ["Herfst"],
+                category: "Fruitboom / Bulletin Board",
+                bundle: "Enchanter's & Artisan",
+                how: "Groeit aan een Pomegranate Tree in de Herfst (boompje kost 6.000g bij Pierre's, 28 dagen groeitijd) of via de Fruit Bat Cave.",
+                extra: "Verplicht voor de Enchanter's Bundle in de Bulletin Board!"
+            },
+
+            // ==================== WINTER ====================
+            {
+                id: "winter-root",
+                name: "Winter Root",
+                dutchName: "Winterwortel",
+                season: "winter",
+                allSeasons: ["Winter"],
+                category: "Foraging",
+                bundle: "Winter Foraging",
+                how: "Graaf met je Hoe (schoffel) in de grond/sneeuw in de Winter, of versla Blue Slimes in de Mines (verdieping 41-79).",
+                extra: "Ligt dus niet bovenop de grond, maar moet uitgegraven worden (of via Slimes)."
+            },
+            {
+                id: "crystal-fruit",
+                name: "Crystal Fruit",
+                dutchName: "Kristalvrucht",
+                season: "winter",
+                allSeasons: ["Winter"],
+                category: "Foraging",
+                bundle: "Winter Foraging",
+                how: "Vind je in het wild op de sneeuw in de Winter, of versla Dust Sprites in de Mines (verdieping 41-79).",
+                extra: "Kan ook groeien uit Winter Seeds."
+            },
+            {
+                id: "snow-yam",
+                name: "Snow Yam",
+                dutchName: "Sneeuwyam",
+                season: "winter",
+                allSeasons: ["Winter"],
+                category: "Foraging",
+                bundle: "Winter Foraging",
+                how: "Graaf met je Hoe (schoffel) in de sneeuw of Artifact Spots (wormpjes) tijdens de Winter.",
+                extra: "Makkelijk te vinden door op het strand of bij de treinbaan te schoffelen."
+            },
+            {
+                id: "crocus",
+                name: "Crocus",
+                dutchName: "Krokus",
+                season: "winter",
+                allSeasons: ["Winter"],
+                category: "Foraging",
+                bundle: "Winter Foraging",
+                how: "Vind je in het wild bovenop de sneeuw in de Winter (overal in de vallei).",
+                extra: "Kan ook groeien uit Winter Seeds."
+            },
+            {
+                id: "nautilus-shell",
+                name: "Nautilus Shell",
+                dutchName: "Nautilusschelp",
+                season: "winter",
+                allSeasons: ["Winter"],
+                category: "Foraging / Bulletin Board",
+                bundle: "Field Research",
+                how: "Vind je in de Winter op het strand (Beach) als schelp op het zand. Soms stuurt Demetrius er een per post.",
+                extra: "Alleen in de Winter op het strand te rapen!"
+            },
+            {
+                id: "holly",
+                name: "Holly",
+                dutchName: "Hulst",
+                season: "winter",
+                allSeasons: ["Winter"],
+                category: "Foraging (Optioneel)",
+                bundle: "Winter Foraging (Niet nodig, enkel ter info)",
+                how: "Niet nodig voor bundles! Wordt vaak verward met Winter Foraging, maar Holly zit NIET in een bundle.",
+                extra: "Let op: Holly is giftig om te eten (-30 Energy)!"
+            },
+
+            // ==================== HET HELE JAAR / OVERIG ====================
+            // Construction Bundle
+            {
+                id: "wood-99-1",
+                name: "99x Wood (1)",
+                dutchName: "99x Hout (stapel 1)",
+                season: "any",
+                allSeasons: ["Hele jaar"],
+                category: "Construction",
+                bundle: "Construction",
+                how: "Hak bomen om met je Axe of koop bij Robin's Carpenter Shop (10g in Jaar 1).",
+                extra: "Construction Bundle vraagt 2 aparte stapels van 99 Wood."
+            },
+            {
+                id: "wood-99-2",
+                name: "99x Wood (2)",
+                dutchName: "99x Hout (stapel 2)",
+                season: "any",
+                allSeasons: ["Hele jaar"],
+                category: "Construction",
+                bundle: "Construction",
+                how: "Tweede stapel van 99 Wood door bomen om te hakken of bij Robin te kopen.",
+                extra: "In totaal dus 198 Wood nodig voor deze bundle."
+            },
+            {
+                id: "stone-99",
+                name: "99x Stone",
+                dutchName: "99x Steen",
+                season: "any",
+                allSeasons: ["Hele jaar"],
+                category: "Construction",
+                bundle: "Construction",
+                how: "Hak stenen kapot met je Pickaxe op je boerderij of in de Mines, of koop bij Robin (20g in Jaar 1).",
+                extra: "Zeer makkelijk te verzamelen tijdens het mijnen."
+            },
+            {
+                id: "hardwood-10",
+                name: "10x Hardwood",
+                dutchName: "10x Hardhout",
+                season: "any",
+                allSeasons: ["Hele jaar"],
+                category: "Construction",
+                bundle: "Construction",
+                how: "Hak grote boomstronken (Large Stumps) kapot met een Copper Axe of beter (op je boerderij of elke dag 6 stronken in de Secret Woods).",
+                extra: "Kan ook uit kratten/tonnen in de Mines komen."
+            },
+
+            // Exotic Foraging
+            {
+                id: "coconut",
+                name: "Coconut",
+                dutchName: "Kokosnoot",
+                season: "any",
+                allSeasons: ["Hele jaar (Woestijn)"],
+                category: "Exotic Foraging",
+                bundle: "Exotic Foraging",
+                how: "Te vinden op de grond in de Calico Desert (nadat je de Bus hebt gerepareerd via de Vault) of soms te koop bij de Traveling Cart.",
+                extra: "Keuzebundle: 5 van de 9 items nodig."
+            },
+            {
+                id: "cactus-fruit",
+                name: "Cactus Fruit",
+                dutchName: "Cactusvrucht",
+                season: "any",
+                allSeasons: ["Hele jaar (Woestijn)"],
+                category: "Exotic Foraging",
+                bundle: "Exotic Foraging",
+                how: "Te vinden op de grond in de Calico Desert, binnen te kweken uit Cactus Seeds (Oasis), of te koop bij de Traveling Cart.",
+                extra: "Keuzebundle: 5 van de 9 items nodig."
+            },
+            {
+                id: "cave-carrot",
+                name: "Cave Carrot",
+                dutchName: "Grotwortel",
+                season: "any",
+                allSeasons: ["Hele jaar (Mines)"],
+                category: "Exotic Foraging",
+                bundle: "Exotic Foraging",
+                how: "Breek houten kratten en tonnen kapot in de Mines of graaf met je Hoe in de zachte aarde in de Mines (verdieping 10-29).",
+                extra: "Super makkelijk item voor de Exotic Foraging Bundle!"
+            },
+            {
+                id: "maple-syrup",
+                name: "Maple Syrup",
+                dutchName: "Ahornsiroop",
+                season: "any",
+                allSeasons: ["Hele jaar (Tapper)"],
+                category: "Exotic Foraging",
+                bundle: "Exotic Foraging",
+                how: "Maak een Tapper (Foraging level 3: 40 Wood + 2 Copper Bars) en plaats deze op een Maple Tree (esdoorn). Duurt 9 dagen.",
+                extra: "Zet al vroeg in het spel Tappers op alle 3 de boomsoorten!"
+            },
+            {
+                id: "oak-resin",
+                name: "Oak Resin",
+                dutchName: "Eikenhars",
+                season: "any",
+                allSeasons: ["Hele jaar (Tapper)"],
+                category: "Exotic Foraging & Enchanter's",
+                bundle: "Exotic Foraging & Enchanter's",
+                how: "Plaats een Tapper op een Oak Tree (eikenboom). Duurt 7-8 dagen.",
+                extra: "Ook verplicht voor de Enchanter's Bundle (Bulletin Board) én nodig om Kegs te bouwen!"
+            },
+            {
+                id: "pine-tar",
+                name: "Pine Tar",
+                dutchName: "Dennenteer",
+                season: "any",
+                allSeasons: ["Hele jaar (Tapper)"],
+                category: "Exotic Foraging",
+                bundle: "Exotic Foraging",
+                how: "Plaats een Tapper op een Pine Tree (dennenboom). Duurt 5-6 dagen.",
+                extra: "De snelste van de 3 boom-tappers."
+            },
+
+            // Animal Bundle
+            {
+                id: "large-milk",
+                name: "Large Milk",
+                dutchName: "Grote fles melk",
+                season: "any",
+                allSeasons: ["Hele jaar (Koe)"],
+                category: "Animal",
+                bundle: "Animal",
+                how: "Koop een koe bij Marnie's Ranch (1.500g, vereist een Barn). Geef haar elke dag eten en aai haar tot ze genoeg hartjes heeft, melk haar dan met een Milk Pail.",
+                extra: "Keuzebundle: 5 van de 6 dierlijke producten nodig."
+            },
+            {
+                id: "large-egg-brown",
+                name: "Large Egg (Brown)",
+                dutchName: "Groot bruin ei",
+                season: "any",
+                allSeasons: ["Hele jaar (Bruine kip)"],
+                category: "Animal",
+                bundle: "Animal",
+                how: "Koop een bruine kip bij Marnie's Ranch (800g, vereist een Coop). Aai en voer haar dagelijks voor hoge vriendschap.",
+                extra: "Keuzebundle: 5 van de 6 dierlijke producten nodig."
+            },
+            {
+                id: "large-egg-white",
+                name: "Large Egg (White)",
+                dutchName: "Groot wit ei",
+                season: "any",
+                allSeasons: ["Hele jaar (Witte kip)"],
+                category: "Animal",
+                bundle: "Animal",
+                how: "Koop een witte kip bij Marnie's Ranch (800g, vereist een Coop). Aai en voer haar dagelijks voor hoge vriendschap.",
+                extra: "Tip: Bij Marnie zie je bovenaan het scherm welke kleur kip je koopt ('Choose a Coop for your new white/brown chicken')."
+            },
+            {
+                id: "large-goat-milk",
+                name: "Large Goat Milk",
+                dutchName: "Grote fles geitenmelk",
+                season: "any",
+                allSeasons: ["Hele jaar (Geit)"],
+                category: "Animal",
+                bundle: "Animal",
+                how: "Upgrade je Barn naar een Big Barn en koop een Goat bij Marnie (4.000g). Geiten geven om de dag melk; bij genoeg hartjes krijg je Large Goat Milk.",
+                extra: "Keuzebundle: 5 van de 6 nodig."
+            },
+            {
+                id: "wool",
+                name: "Wool",
+                dutchName: "Wol",
+                season: "any",
+                allSeasons: ["Hele jaar (Schaap / Konijn)"],
+                category: "Animal",
+                bundle: "Animal",
+                how: "Verkrijgbaar van een Sheep (Deluxe Barn, scheren met Shears) of van een Rabbit (Deluxe Coop, laat regelmatig wol vallen).",
+                extra: "Handig: een Rabbit geeft ook soms een Rabbit's Foot voor de Enchanter's Bundle!"
+            },
+            {
+                id: "duck-egg",
+                name: "Duck Egg",
+                dutchName: "Eendenei",
+                season: "any",
+                allSeasons: ["Hele jaar (Eend)"],
+                category: "Animal",
+                bundle: "Animal",
+                how: "Upgrade je Coop naar een Big Coop en koop een Duck bij Marnie (1.200g). Eenden leggen om de dag een Duck Egg.",
+                extra: "Keuzebundle: 5 van de 6 nodig."
+            },
+
+            // Artisan Bundle (overige producten)
+            {
+                id: "truffle-oil",
+                name: "Truffle Oil",
+                dutchName: "Truffelolie",
+                season: "any",
+                allSeasons: ["Lente/Zomer/Herfst (Varken)"],
+                category: "Artisan",
+                bundle: "Artisan",
+                how: "Koop een Pig bij Marnie (Deluxe Barn, 16.000g). Varkens graven buiten (niet in de Winter!) Truffels op. Stop een Truffel in een Oil Maker (Farming lvl 8).",
+                extra: "Keuzebundle: je hoeft maar 6 van de 12 Artisan items te kiezen!"
+            },
+            {
+                id: "cloth",
+                name: "Cloth",
+                dutchName: "Stof / Laken",
+                season: "any",
+                allSeasons: ["Hele jaar"],
+                category: "Artisan",
+                bundle: "Artisan",
+                how: "Stop Wool in een Loom (Farming lvl 7), recycle Soggy Newspaper in een Recycling Machine (10% kans), of versla Mummies in Skull Cavern.",
+                extra: "Ook Emily stuurt soms Cloth per post!"
+            },
+            {
+                id: "goat-cheese",
+                name: "Goat Cheese",
+                dutchName: "Geitenkaas",
+                season: "any",
+                allSeasons: ["Hele jaar (Cheese Press)"],
+                category: "Artisan",
+                bundle: "Artisan",
+                how: "Stop Goat Milk in een Cheese Press (Farming lvl 6: 45 Wood, 45 Stone, 10 Hardwood, 1 Copper Bar).",
+                extra: "Makkelijk punt voor de Artisan Bundle als je toch al een geit hebt."
+            },
+            {
+                id: "cheese",
+                name: "Cheese",
+                dutchName: "Kaas",
+                season: "any",
+                allSeasons: ["Hele jaar (Cheese Press)"],
+                category: "Artisan",
+                bundle: "Artisan",
+                how: "Stop normale Milk (of Large Milk) in een Cheese Press.",
+                extra: "Een van de makkelijkste items om te maken voor de Artisan Bundle!"
+            },
+            {
+                id: "honey",
+                name: "Honey",
+                dutchName: "Honing",
+                season: "any",
+                allSeasons: ["Lente/Zomer/Herfst (Bee House)"],
+                category: "Artisan",
+                bundle: "Artisan",
+                how: "Plaats een Bee House (Farming lvl 3: 40 Wood, 8 Coal, 1 Iron Bar, 1 Maple Syrup) buiten. Produceert elke 4 dagen honing (behalve in de Winter).",
+                extra: "Ook te koop bij Sandy's Oasis op vrijdag."
+            },
+            {
+                id: "jelly",
+                name: "Jelly",
+                dutchName: "Jam / Gelei",
+                season: "any",
+                allSeasons: ["Hele jaar (Preserves Jar)"],
+                category: "Artisan",
+                bundle: "Artisan",
+                how: "Stop willekeurig welk fruit (bijv. Blackberry of Salmonberry) in een Preserves Jar (Farming lvl 4: 50 Wood, 40 Stone, 8 Coal).",
+                extra: "Duurt ongeveer 2 tot 3 dagen."
+            },
+
+            // Night Fishing & Specialty Fish (overig)
+            {
+                id: "ghostfish",
+                name: "Ghostfish",
+                dutchName: "Spookvis",
+                season: "any",
+                allSeasons: ["Hele jaar (Mines)"],
+                category: "Vis",
+                bundle: "Specialty Fish",
+                how: "Vang in de ondergrondse meren van de Mines (verdieping 20, 60 en 100) in elk seizoen, of als drop van Ghosts (verdieping 51-79).",
+                extra: "Verdieping 20 is het snelst bereikbaar via de lift."
+            },
+            {
+                id: "sandfish",
+                name: "Sandfish",
+                dutchName: "Zandvis",
+                season: "any",
+                allSeasons: ["Hele jaar (Woestijn)"],
+                category: "Vis",
+                bundle: "Specialty Fish",
+                how: "Vang in de vijver van de Calico Desert (nadat de Bus is gerepareerd) in elk seizoen. Tijd: 06:00 – 20:00.",
+                extra: "Soms ook te koop bij de Traveling Cart."
+            },
+
+            // Crab Pot Bundle (kies 5 van de 10)
+            {
+                id: "lobster",
+                name: "Lobster",
+                dutchName: "Kreeft",
+                season: "any",
+                allSeasons: ["Hele jaar (Crab Pot - Oceaan)"],
+                category: "Crab Pot",
+                bundle: "Crab Pot",
+                how: "Plaats een Crab Pot met Bait in de Oceaan (Beach). Keuzebundle: je hebt maar 5 van de 10 Crab Pot items nodig!",
+                extra: "Tip: Je kunt deze hele bundle voltooien door simpelweg op het strand schelpen te rapen (Cockle, Mussel, Oyster, Clam) en 1 Crab in de Mines te verslaan!"
+            },
+            {
+                id: "crayfish",
+                name: "Crayfish",
+                dutchName: "Rivierkreeft",
+                season: "any",
+                allSeasons: ["Hele jaar (Crab Pot - Zoetwater)"],
+                category: "Crab Pot",
+                bundle: "Crab Pot",
+                how: "Plaats een Crab Pot met Bait in zoet water (rivier, vijver op je boerderij of Mountain Lake).",
+                extra: "Keuzebundle: 5 van de 10 nodig."
+            },
+            {
+                id: "crab",
+                name: "Crab",
+                dutchName: "Krab",
+                season: "any",
+                allSeasons: ["Hele jaar (Mines / Crab Pot)"],
+                category: "Crab Pot",
+                bundle: "Crab Pot",
+                how: "Plaats een Crab Pot in de Oceaan, OF versla Rock Crabs in de Mines (verdieping 1-29).",
+                extra: "Rock Crabs lijken eerst op gewone stenen totdat je ze slaat!"
+            },
+            {
+                id: "cockle",
+                name: "Cockle",
+                dutchName: "Kokkel",
+                season: "any",
+                allSeasons: ["Hele jaar (Strand / Crab Pot)"],
+                category: "Crab Pot",
+                bundle: "Crab Pot",
+                how: "Raap op van het zand op het Strand (Beach) in elk seizoen, of vang in een Crab Pot in de Oceaan.",
+                extra: "Geen vishengel of krabbenfuik nodig!"
+            },
+            {
+                id: "mussel",
+                name: "Mussel",
+                dutchName: "Mossel",
+                season: "any",
+                allSeasons: ["Hele jaar (Strand / Crab Pot)"],
+                category: "Crab Pot",
+                bundle: "Crab Pot",
+                how: "Raap op van het Strand (Beach) in elk seizoen, of vang in een Crab Pot in de Oceaan.",
+                extra: "Makkelijk op te rapen tijdens een wandeling over het strand."
+            },
+            {
+                id: "shrimp",
+                name: "Shrimp",
+                dutchName: "Garnaal",
+                season: "any",
+                allSeasons: ["Hele jaar (Crab Pot - Oceaan)"],
+                category: "Crab Pot",
+                bundle: "Crab Pot",
+                how: "Plaats een Crab Pot met Bait in de Oceaan (Beach).",
+                extra: "Keuzebundle: 5 van de 10 nodig."
+            },
+            {
+                id: "snail",
+                name: "Snail",
+                dutchName: "Slak",
+                season: "any",
+                allSeasons: ["Hele jaar (Crab Pot - Zoetwater)"],
+                category: "Crab Pot",
+                bundle: "Crab Pot",
+                how: "Plaats een Crab Pot met Bait in zoet water (rivier, meer of boerderijvijver).",
+                extra: "Keuzebundle: 5 van de 10 nodig."
+            },
+            {
+                id: "periwinkle",
+                name: "Periwinkle",
+                dutchName: "Alikruik (waterslak)",
+                season: "any",
+                allSeasons: ["Hele jaar (Crab Pot - Zoetwater)"],
+                category: "Crab Pot",
+                bundle: "Crab Pot",
+                how: "Plaats een Crab Pot met Bait in zoet water (rivier, meer of boerderijvijver).",
+                extra: "Keuzebundle: 5 van de 10 nodig."
+            },
+            {
+                id: "oyster",
+                name: "Oyster",
+                dutchName: "Oester",
+                season: "any",
+                allSeasons: ["Hele jaar (Strand / Crab Pot)"],
+                category: "Crab Pot",
+                bundle: "Crab Pot",
+                how: "Raap op van het Strand (Beach) in elk seizoen, of vang in een Crab Pot in de Oceaan.",
+                extra: "Makkelijk zonder Crab Pot te vinden."
+            },
+            {
+                id: "clam",
+                name: "Clam",
+                dutchName: "Venusschelp",
+                season: "any",
+                allSeasons: ["Hele jaar (Strand / Crab Pot)"],
+                category: "Crab Pot",
+                bundle: "Crab Pot",
+                how: "Raap op van het Strand (Beach) in elk seizoen, of vang in een Crab Pot in de Oceaan.",
+                extra: "Samen met Cockle, Mussel, Oyster en een Crab uit de Mines heb je al 5/5!"
+            },
+
+            // Boiler Room: Blacksmith's, Geologist's, Adventurer's
+            {
+                id: "copper-bar",
+                name: "Copper Bar",
+                dutchName: "Koperen staaf",
+                season: "any",
+                allSeasons: ["Hele jaar (Smelten)"],
+                category: "Blacksmith's",
+                bundle: "Blacksmith's",
+                how: "Smelt 5 Copper Ore + 1 Coal in een Furnace (30 minuten in-game). Copper Ore vind je op verdieping 1-39 in de Mines.",
+                extra: "Clint geeft je het recept voor de Furnace zodra je je eerste Copper Ore vindt."
+            },
+            {
+                id: "iron-bar",
+                name: "Iron Bar",
+                dutchName: "IJzeren staaf",
+                season: "any",
+                allSeasons: ["Hele jaar (Smelten)"],
+                category: "Blacksmith's",
+                bundle: "Blacksmith's",
+                how: "Smelt 5 Iron Ore + 1 Coal in een Furnace (2 uur in-game). Iron Ore vind je op verdieping 41-79 in de Mines.",
+                extra: "Je kunt ook 3 Copper Bars omzetten in 1 Iron Bar (Transmute Fe, Mining lvl 4)."
+            },
+            {
+                id: "gold-bar",
+                name: "Gold Bar",
+                dutchName: "Gouden staaf",
+                season: "any",
+                allSeasons: ["Hele jaar (Smelten)"],
+                category: "Blacksmith's",
+                bundle: "Blacksmith's",
+                how: "Smelt 5 Gold Ore + 1 Coal in een Furnace (5 uur in-game). Gold Ore vind je op verdieping 81-119 in de Mines.",
+                extra: "Ook te maken uit 2 Iron Bars (Transmute Au, Mining lvl 7)."
+            },
+            {
+                id: "quartz",
+                name: "Quartz",
+                dutchName: "Kwarts",
+                season: "any",
+                allSeasons: ["Hele jaar (Mines)"],
+                category: "Geologist's",
+                bundle: "Geologist's",
+                how: "Raap op van de grond op elke verdieping in de Mines (verdieping 1-120).",
+                extra: "Zeer algemeen in de mijnen."
+            },
+            {
+                id: "earth-crystal",
+                name: "Earth Crystal",
+                dutchName: "Aardkristal",
+                season: "any",
+                allSeasons: ["Hele jaar (Mines)"],
+                category: "Geologist's",
+                bundle: "Geologist's",
+                how: "Raap op van de grond in de bovenste verdiepingen van de Mines (verdieping 1-39), uit Geodes, of als drop van Duggies.",
+                extra: "Bewaar er ook één om later een Mayonnaise Machine te maken!"
+            },
+            {
+                id: "frozen-tear",
+                name: "Frozen Tear",
+                dutchName: "Bevroren traan",
+                season: "any",
+                allSeasons: ["Hele jaar (Mines)"],
+                category: "Geologist's",
+                bundle: "Geologist's",
+                how: "Raap op van de grond in de ijsverdiepingen van de Mines (verdieping 41-79), uit Frozen Geodes, of van Dust Sprites.",
+                extra: "Sebastian is hier ook dol op als cadeau."
+            },
+            {
+                id: "fire-quartz",
+                name: "Fire Quartz",
+                dutchName: "Vuurkwarts",
+                season: "any",
+                allSeasons: ["Hele jaar (Mines)"],
+                category: "Geologist's",
+                bundle: "Geologist's",
+                how: "Raap op van de grond in de lavaverdiepingen van de Mines (verdieping 81-119) of uit Magma Geodes.",
+                extra: "Kan in de Furnace ook omgesmolten worden naar 3 Refined Quartz."
+            },
+            {
+                id: "slime-99",
+                name: "99x Slime",
+                dutchName: "99x Slijm",
+                season: "any",
+                allSeasons: ["Hele jaar (Monsters)"],
+                category: "Adventurer's",
+                bundle: "Adventurer's",
+                how: "Versla Slimes op elke verdieping in de Mines. Keuzebundle: je hebt maar 2 van de 4 monster-loot items nodig!",
+                extra: "Meestal heb je al genoeg Slime en Bat Wings ruim voordat je Solar/Void Essence vindt."
+            },
+            {
+                id: "bat-wing-10",
+                name: "10x Bat Wing",
+                dutchName: "10x Vleermuisvleugel",
+                season: "any",
+                allSeasons: ["Hele jaar (Monsters)"],
+                category: "Adventurer's",
+                bundle: "Adventurer's",
+                how: "Versla Bats (verdieping 31-39), Frost Bats (41-79) of Lava Bats (81-119) in de Mines.",
+                extra: "Samen met 99x Slime de makkelijkste combinatie voor de Adventurer's Bundle."
+            },
+            {
+                id: "solar-essence",
+                name: "Solar Essence",
+                dutchName: "Zonne-essentie",
+                season: "any",
+                allSeasons: ["Hele jaar (Monsters)"],
+                category: "Adventurer's",
+                bundle: "Adventurer's",
+                how: "Versla Ghosts (verdieping 51-79), Squid Kids (81-119) of Metal Heads (81-119) in de Mines, of koop bij Krobus.",
+                extra: "Keuzebundle: 2 van de 4 nodig."
+            },
+            {
+                id: "void-essence",
+                name: "Void Essence",
+                dutchName: "Leegte-essentie",
+                season: "any",
+                allSeasons: ["Hele jaar (Monsters)"],
+                category: "Adventurer's",
+                bundle: "Adventurer's",
+                how: "Versla Shadow Brutes en Shadow Shamans in de onderste verdiepingen van de Mines (verdieping 81-119), of koop bij Krobus.",
+                extra: "Keuzebundle: 2 van de 4 nodig."
+            },
+
+            // Bulletin Board (overige items die het hele jaar / via koken/dieren/vissen te krijgen zijn)
+            {
+                id: "maple-syrup-chef",
+                name: "Maple Syrup (Chef's)",
+                dutchName: "Ahornsiroop (Chef's)",
+                season: "any",
+                allSeasons: ["Hele jaar (Tapper)"],
+                category: "Bulletin Board",
+                bundle: "Chef's",
+                how: "Tap een Maple Tree met een Tapper (duurt 9 dagen). Nodig voor de Chef's Bundle in de Bulletin Board.",
+                extra: "Zorg dat je er apart eentje bewaart voor Chef's Bundle naast Exotic Foraging!"
+            },
+            {
+                id: "truffle",
+                name: "Truffle",
+                dutchName: "Truffel",
+                season: "any",
+                allSeasons: ["Lente/Zomer/Herfst (Varken)"],
+                category: "Bulletin Board",
+                bundle: "Chef's",
+                how: "Koop een Pig bij Marnie's Ranch (vereist Deluxe Barn, 16.000g). Laat het varken naar buiten lopen op dagen zonder regen (niet in de Winter) om truffels op te graven.",
+                extra: "Soms ook te koop bij de Traveling Cart."
+            },
+            {
+                id: "maki-roll",
+                name: "Maki Roll",
+                dutchName: "Maki-rol (sushi)",
+                season: "any",
+                allSeasons: ["Hele jaar (Koken)"],
+                category: "Bulletin Board",
+                bundle: "Chef's",
+                how: "Kook in je keuken (vereist eerste huis-upgrade): 1 willekeurige vis + 1 Seaweed + 1 Rice. Recept via The Queen of Sauce (21 Zomer, Jaar 1) of koop bij Gus in de Saloon (300g).",
+                extra: "Je kunt het recept altijd bij Gus in de Stardrop Saloon kopen!"
+            },
+            {
+                id: "fried-egg",
+                name: "Fried Egg",
+                dutchName: "Gebakken ei",
+                season: "any",
+                allSeasons: ["Hele jaar (Koken)"],
+                category: "Bulletin Board",
+                bundle: "Chef's",
+                how: "Kook in je keuken (eerste huis-upgrade): 1 willekeurig Egg. Het recept heb je standaard zodra je een keuken hebt.",
+                extra: "Soms ook te koop in de Stardrop Saloon."
+            },
+            {
+                id: "sea-urchin",
+                name: "Sea Urchin",
+                dutchName: "Zee-egel",
+                season: "any",
+                allSeasons: ["Hele jaar (Strand - oostkant)"],
+                category: "Bulletin Board",
+                bundle: "Dye",
+                how: "Repareer de houten brug aan de rechterkant van het Strand (Beach) met 300 Wood. Aan de overkant (Tide Pools) liggen regelmatig Sea Urchins op het zand.",
+                extra: "Het hele jaar door te vinden zodra de brug gemaakt is."
+            },
+            {
+                id: "duck-feather",
+                name: "Duck Feather",
+                dutchName: "Eendenveer",
+                season: "any",
+                allSeasons: ["Hele jaar (Eend)"],
+                category: "Bulletin Board",
+                bundle: "Dye",
+                how: "Wordt 's ochtends in de Coop gelegd door een blije Duck (Big Coop, 1.200g bij Marnie) met voldoende vriendschap.",
+                extra: "Soms te koop bij de Traveling Cart."
+            },
+            {
+                id: "aquamarine",
+                name: "Aquamarine",
+                dutchName: "Aquamarijn",
+                season: "any",
+                allSeasons: ["Hele jaar (Mines)"],
+                category: "Bulletin Board",
+                bundle: "Dye",
+                how: "Hak Aquamarine Nodes (lichtblauwe kristallen rotsen) kapot in de Mines vanaf verdieping 41+, of open Geodes / vis-schatkisten.",
+                extra: "Vrij makkelijk te vinden op verdieping 41-79."
+            },
+            {
+                id: "chub",
+                name: "Chub",
+                dutchName: "Kopvoorn",
+                season: "any",
+                allSeasons: ["Hele jaar (Rivier / Meer)"],
+                category: "Bulletin Board",
+                bundle: "Field Research",
+                how: "Vang in het Mountain Lake of de Rivier (Cindersap Forest) in elk seizoen. Tijd: Elk tijdstip. Weer: Elk weer.",
+                extra: "Komt het hele jaar door zeer vaak voor."
+            },
+            {
+                id: "frozen-geode",
+                name: "Frozen Geode",
+                dutchName: "Bevroren geode",
+                season: "any",
+                allSeasons: ["Hele jaar (Mines)"],
+                category: "Bulletin Board",
+                bundle: "Field Research",
+                how: "Breek stenen kapot in de ijsverdiepingen van de Mines (verdieping 41-79). Lever hem IN ZIJN GEHEEL in (niet eerst laten openbreken door Clint!).",
+                extra: "Let op: niet openbreken bij Clint, je moet de dichte geode doneren!"
+            },
+            {
+                id: "wheat-10",
+                name: "10x Wheat",
+                dutchName: "10x Tarwe",
+                season: "any",
+                allSeasons: ["Zomer", "Herfst"],
+                category: "Bulletin Board",
+                bundle: "Fodder",
+                how: "Koop 10 Wheat Seeds bij Pierre's (10g per stuk) in Zomer of Herfst. Groeitijd: slechts 4 dagen! Oogst met de Scythe (zeis).",
+                extra: "Super goedkoop en snel (100g totaal voor 10 zaden)."
+            },
+            {
+                id: "hay-10",
+                name: "10x Hay",
+                dutchName: "10x Hooi",
+                season: "any",
+                allSeasons: ["Hele jaar (Marnie / Silo)"],
+                category: "Bulletin Board",
+                bundle: "Fodder",
+                how: "Koop 10 Hay bij Marnie's Ranch (50g per stuk = 500g) of maai gras op je boerderij met de Scythe nadat je een Silo hebt gebouwd.",
+                extra: "Voor 500g bij Marnie ben je direct klaar!"
+            },
+            {
+                id: "wine",
+                name: "Wine",
+                dutchName: "Wijn",
+                season: "any",
+                allSeasons: ["Hele jaar (Keg)"],
+                category: "Bulletin Board",
+                bundle: "Enchanter's",
+                how: "Stop willekeurig welk fruit (bijv. Salmonberry, Blackberry of Grape) in een Keg (Farming lvl 8: 30 Wood, 1 Copper Bar, 1 Iron Bar, 1 Oak Resin). Duurt 7 dagen.",
+                extra: "Tip: Je krijgt ook een gratis Keg als beloning voor het voltooien van de Artisan Bundle!"
+            },
+            {
+                id: "rabbits-foot",
+                name: "Rabbit's Foot",
+                dutchName: "Konijnenpootje",
+                season: "any",
+                allSeasons: ["Hele jaar (Konijn)"],
+                category: "Bulletin Board",
+                bundle: "Enchanter's",
+                how: "Wordt soms 's ochtends in de Coop gelegd door een Rabbit (Deluxe Coop, 8.000g bij Marnie) met hoge vriendschap, of als zeldzame drop van Serpents in Skull Cavern.",
+                extra: "Soms ook te koop bij de Traveling Cart!"
+            },
+
+            // Vault Bundles (Goud)
+            {
+                id: "vault-2500",
+                name: "2,500g Bundle",
+                dutchName: "2.500 goud",
+                season: "any",
+                allSeasons: ["Hele jaar (Goud)"],
+                category: "Vault",
+                bundle: "2,500g",
+                how: "Ga naar de Vault (kluisruimte rechtsboven in het Community Center) en klik op 'Purchase' om 2.500g te betalen.",
+                extra: "De Vault verschijnt zodra je 1 andere bundle ergens in het Community Center hebt afgerond."
+            },
+            {
+                id: "vault-5000",
+                name: "5,000g Bundle",
+                dutchName: "5.000 goud",
+                season: "any",
+                allSeasons: ["Hele jaar (Goud)"],
+                category: "Vault",
+                bundle: "5,000g",
+                how: "Betaal 5.000g in de Vault van het Community Center.",
+                extra: "Beloning: 30x Quality Fertilizer."
+            },
+            {
+                id: "vault-10000",
+                name: "10,000g Bundle",
+                dutchName: "10.000 goud",
+                season: "any",
+                allSeasons: ["Hele jaar (Goud)"],
+                category: "Vault",
+                bundle: "10,000g",
+                how: "Betaal 10.000g in de Vault van het Community Center.",
+                extra: "Beloning: Lightning Rod (handig voor Battery Packs!)."
+            },
+            {
+                id: "vault-25000",
+                name: "25,000g Bundle",
+                dutchName: "25.000 goud",
+                season: "any",
+                allSeasons: ["Hele jaar (Goud)"],
+                category: "Vault",
+                bundle: "25,000g",
+                how: "Betaal 25.000g in de Vault van het Community Center. In totaal kost de hele Vault 42.500g.",
+                extra: "Als alle 4 de Vault-bundles klaar zijn, repareren de Junimos 's nachts de Bus naar de Calico Desert!"
+            }
+        ];
+
+        // Seizoen configuratie
+        const SEASONS_CONFIG = [
+            {
+                key: "spring",
+                title: "Lente (Spring)",
+                icon: "🌸",
+                headerBg: "bg-gradient-to-r from-pink-100 to-emerald-100 border-pink-300",
+                titleColor: "text-pink-950",
+                badgeBg: "bg-pink-200 text-pink-950",
+                barColor: "bg-pink-500",
+                desc: "Items die in de Lente groeien, te rapen zijn of gevangen worden (inclusief vissen die in Lente én andere seizoenen voorkomen)."
+            },
+            {
+                key: "summer",
+                title: "Zomer (Summer)",
+                icon: "☀️",
+                headerBg: "bg-gradient-to-r from-amber-100 to-yellow-100 border-amber-300",
+                titleColor: "text-amber-950",
+                badgeBg: "bg-amber-200 text-amber-950",
+                barColor: "bg-amber-500",
+                desc: "Zomergewassen, strand/bos-foraging en specifieke zomervissen zoals de Pufferfish."
+            },
+            {
+                key: "fall",
+                title: "Herfst (Fall)",
+                icon: "🍂",
+                headerBg: "bg-gradient-to-r from-orange-100 to-red-100 border-orange-300",
+                titleColor: "text-orange-950",
+                badgeBg: "bg-orange-200 text-orange-950",
+                barColor: "bg-orange-600",
+                desc: "Herfstgewassen, fruitbomen (Appel & Granaatappel) en de regenachtige Walleye."
+            },
+            {
+                key: "winter",
+                title: "Winter",
+                icon: "❄️",
+                headerBg: "bg-gradient-to-r from-sky-100 to-indigo-100 border-sky-300",
+                titleColor: "text-sky-950",
+                badgeBg: "bg-sky-200 text-sky-950",
+                barColor: "bg-sky-500",
+                desc: "Items die alleen in de Winter op het strand of in/onder de sneeuw te vinden zijn."
+            },
+            {
+                key: "any",
+                title: "Het hele jaar / Overig (Mines, Dieren, Artisan, Crab Pot & Vault)",
+                icon: "⏳",
+                headerBg: "bg-gradient-to-r from-purple-100 to-stone-200 border-purple-300",
+                titleColor: "text-purple-950",
+                badgeBg: "bg-purple-200 text-purple-950",
+                barColor: "bg-purple-600",
+                desc: "Items die niet aan één specifiek seizoen gebonden zijn: mijn-ertsen, dierlijke producten, ambachtelijke goederen, krabbenfuiken en goud."
+            }
+        ];
+
+        // State beheer
+        const STORAGE_KEY = "stardew_cc_checklist_nl_v1";
+        let checkedItems = new Set();
+        let activeSeasonFilter = "all";
+        let searchQuery = "";
+        let hideCompleted = false;
+
+        // Genereer compacte code van aangevinkte items (voor URL-hash & handmatige back-up)
+        function encodeProgressCode() {
+            const validIds = ITEMS_DATA.filter(i => i.id !== "holly").map(i => i.id);
+            const bitString = validIds.map(id => (checkedItems.has(id) ? "1" : "0")).join("");
+            // Zet bitstring om naar hex voor een superkorte code
+            let hex = "";
+            for (let i = 0; i < bitString.length; i += 4) {
+                const chunk = bitString.slice(i, i + 4).padEnd(4, "0");
+                hex += parseInt(chunk, 2).toString(16);
+            }
+            return `SDV1-${hex}`;
+        }
+
+        // Lees compacte code terug naar Set van item-IDs
+        function decodeProgressCode(codeStr) {
+            if (!codeStr || typeof codeStr !== "string") return null;
+            const cleaned = codeStr.trim();
+            if (!cleaned.startsWith("SDV1-")) return null;
+            const hex = cleaned.slice(5);
+            if (!/^[0-9a-fA-F]+$/.test(hex)) return null;
+
+            const validIds = ITEMS_DATA.filter(i => i.id !== "holly").map(i => i.id);
+            let bitString = "";
+            for (let i = 0; i < hex.length; i++) {
+                bitString += parseInt(hex[i], 16).toString(2).padStart(4, "0");
+            }
+
+            const restored = new Set();
+            for (let i = 0; i < validIds.length; i++) {
+                if (bitString[i] === "1") {
+                    restored.add(validIds[i]);
+                }
+            }
+            return restored;
+        }
+
+        // Laad voortgang uit URL-hash of localStorage
+        function loadProgress() {
+            try {
+                // 1. Controleer eerst of er een voortgangscode in de URL-hash staat (#SDV1-...)
+                if (window.location.hash && window.location.hash.startsWith("#SDV1-")) {
+                    const fromHash = decodeProgressCode(window.location.hash.slice(1));
+                    if (fromHash) {
+                        checkedItems = fromHash;
+                        saveProgress();
+                        return;
+                    }
+                }
+
+                // 2. Laad anders uit browser localStorage (werkt direct op GitHub Pages)
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed)) {
+                        checkedItems = new Set(parsed);
+                    }
+                }
+            } catch (e) {
+                console.error("Kon voortgang niet laden:", e);
+            }
+        }
+
+        // Sla voortgang op in localStorage én werk URL-hash bij
+        function saveProgress() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify([...checkedItems]));
+                const code = encodeProgressCode();
+                if (checkedItems.size > 0) {
+                    history.replaceState(null, "", `#${code}`);
+                } else {
+                    history.replaceState(null, "", window.location.pathname + window.location.search);
+                }
+            } catch (e) {
+                console.error("Kon voortgang niet opslaan:", e);
+            }
+        }
+
+        // Bereken voltooide bundles
+        function getBundleStats() {
+            const bundleCounts = {};
+            Object.keys(BUNDLES_META).forEach(b => bundleCounts[b] = 0);
+
+            ITEMS_DATA.forEach(item => {
+                if (item.id === "holly") return; // Holly is puur informatief
+                if (checkedItems.has(item.id)) {
+                    // Sommige items tellen voor 2 bundles (zoals Red Mushroom, Purple Mushroom, Oak Resin, Apple, Pomegranate)
+                    const bundles = item.bundle.split("&").map(s => s.trim());
+                    bundles.forEach(bName => {
+                        if (bundleCounts[bName] !== undefined) {
+                            bundleCounts[bName]++;
+                        }
+                    });
+                }
+            });
+
+            let completedBundles = 0;
+            const totalBundles = Object.keys(BUNDLES_META).length;
+
+            Object.entries(BUNDLES_META).forEach(([bName, meta]) => {
+                if (bundleCounts[bName] >= meta.required) {
+                    completedBundles++;
+                }
+            });
+
+            return { bundleCounts, completedBundles, totalBundles };
+        }
+
+        // Update algemene voortgangsbalk
+        function updateGlobalStats() {
+            const validItems = ITEMS_DATA.filter(i => i.id !== "holly");
+            const total = validItems.length;
+            const done = validItems.filter(i => checkedItems.has(i.id)).length;
+            const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+            document.getElementById("total-progress-text").textContent = `${done} / ${total} (${pct}%)`;
+            document.getElementById("total-progress-bar").style.width = `${pct}%`;
+
+            const { completedBundles, totalBundles } = getBundleStats();
+            document.getElementById("completed-bundles-text").textContent = `${completedBundles} / ${totalBundles} bundles compleet`;
+        }
+
+        // Render de checklist per seizoen
+        function renderChecklist() {
+            const container = document.getElementById("checklist-container");
+            container.innerHTML = "";
+
+            const { bundleCounts } = getBundleStats();
+            const query = searchQuery.trim().toLowerCase();
+
+            const seasonsToRender = activeSeasonFilter === "all"
+                ? SEASONS_CONFIG
+                : SEASONS_CONFIG.filter(s => s.key === activeSeasonFilter);
+
+            let totalVisibleItems = 0;
+
+            seasonsToRender.forEach(seasonCfg => {
+                const seasonItemsAll = ITEMS_DATA.filter(item => item.season === seasonCfg.key);
+                const validSeasonItems = seasonItemsAll.filter(i => i.id !== "holly");
+                const completedInSeason = validSeasonItems.filter(i => checkedItems.has(i.id)).length;
+                const seasonPct = validSeasonItems.length > 0
+                    ? Math.round((completedInSeason / validSeasonItems.length) * 100)
+                    : 0;
+
+                // Filter op zoekterm en "verberg afgevinkt"
+                const filteredItems = seasonItemsAll.filter(item => {
+                    const isDone = checkedItems.has(item.id);
+                    if (hideCompleted && isDone) return false;
+
+                    if (query) {
+                        const matchName = item.name.toLowerCase().includes(query);
+                        const matchDutch = item.dutchName.toLowerCase().includes(query);
+                        const matchBundle = item.bundle.toLowerCase().includes(query);
+                        const matchCat = item.category.toLowerCase().includes(query);
+                        const matchHow = item.how.toLowerCase().includes(query);
+                        return matchName || matchDutch || matchBundle || matchCat || matchHow;
+                    }
+                    return true;
+                });
+
+                if (filteredItems.length === 0 && (query || hideCompleted)) {
+                    return; // Sla lege sectie over bij actief zoeken/filteren
+                }
+
+                totalVisibleItems += filteredItems.length;
+
+                // Maak seizoen kaart
+                const section = document.createElement("section");
+                section.className = "parchment-card rounded-2xl overflow-hidden";
+
+                // Seizoen Header
+                const header = document.createElement("div");
+                header.className = `${seasonCfg.headerBg} border-b-2 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3`;
+                header.innerHTML = `
+                    <div>
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-2xl">${seasonCfg.icon}</span>
+                            <h2 class="text-xl font-extrabold ${seasonCfg.titleColor}">${seasonCfg.title}</h2>
+                        </div>
+                        <p class="text-xs sm:text-sm text-stone-700 mt-1">${seasonCfg.desc}</p>
+                    </div>
+                    <div class="flex flex-col items-start sm:items-end min-w-[160px]">
+                        <span class="text-xs font-bold ${seasonCfg.titleColor} mb-1">
+                            ${completedInSeason} / ${validSeasonItems.length} afgevinkt (${seasonPct}%)
+                        </span>
+                        <div class="w-full sm:w-40 bg-white/80 rounded-full h-2.5 border border-stone-300 overflow-hidden">
+                            <div class="${seasonCfg.barColor} h-full rounded-full transition-all duration-300" style="width: ${seasonPct}%"></div>
+                        </div>
+                    </div>
+                `;
+                section.appendChild(header);
+
+                // Grid met items
+                const grid = document.createElement("div");
+                grid.className = "p-3 sm:p-4 grid grid-cols-1 md:grid-cols-2 gap-2.5";
+
+                filteredItems.forEach(item => {
+                    const isChecked = checkedItems.has(item.id);
+                    const isHolly = item.id === "holly";
+
+                    // Check of de bijbehorende bundle(s) al genoeg items hebben
+                    const itemBundles = item.bundle.split("&").map(s => s.trim());
+                    const isBundleComplete = !isHolly && itemBundles.every(bName => {
+                        const meta = BUNDLES_META[bName];
+                        return meta && bundleCounts[bName] >= meta.required;
+                    });
+
+                    // Bouw badge tekst voor bundle + keuze-aantal
+                    const bundleLabels = itemBundles.map(bName => {
+                        const meta = BUNDLES_META[bName];
+                        if (!meta) return bName;
+                        const choiceHint = meta.required < meta.total ? ` (${meta.required}/${meta.total})` : "";
+                        return `${meta.room}: ${bName}${choiceHint}`;
+                    }).join(" + ");
+
+                    const row = document.createElement("div");
+                    row.className = `item-row relative flex items-center justify-between gap-3 p-3 rounded-xl border border-[#e3d2b4] bg-[#fffdf9] cursor-pointer select-none ${isChecked ? "item-checked" : ""} ${isHolly ? "opacity-75 border-dashed" : ""}`;
+                    row.dataset.itemId = item.id;
+
+                    // Extra seizoenspillen indien item in meerdere seizoenen voorkomt
+                    const multiSeasonHtml = item.allSeasons.length > 1
+                        ? `<span class="text-[11px] font-medium px-2 py-0.5 rounded-md bg-stone-200/80 text-stone-700">${item.allSeasons.join(", ")}</span>`
+                        : "";
+
+                    row.innerHTML = `
+                        <div class="flex items-start gap-3 min-w-0 flex-1">
+                            <input type="checkbox" class="stardew-checkbox mt-0.5" ${isChecked ? "checked" : ""} aria-label="${item.name}">
+                            <div class="min-w-0 flex-1">
+                                <div class="flex flex-wrap items-center gap-1.5">
+                                    <span class="item-title font-bold text-sm sm:text-base text-[#3b2618]">${item.name}</span>
+                                    <span class="text-xs text-stone-500">(${item.dutchName})</span>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                                    <span class="text-[11px] font-semibold px-2 py-0.5 rounded-md ${isBundleComplete ? "bg-emerald-100 text-emerald-800 border border-emerald-300" : "bg-amber-100 text-amber-900 border border-amber-300"}">
+                                        ${isBundleComplete ? "✔ " : "📦 "}${bundleLabels}
+                                    </span>
+                                    ${multiSeasonHtml}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex-shrink-0 text-amber-700/70 hover:text-amber-900 text-xs font-bold px-2 py-1 rounded-lg bg-amber-100/60 border border-amber-200/80" title="Beweeg erover voor uitleg">
+                            ℹ️ Hoe?
+                        </div>
+                    `;
+
+                    // Checkbox klik & rij klik
+                    const checkbox = row.querySelector("input[type='checkbox']");
+                    checkbox.addEventListener("change", (e) => {
+                        e.stopPropagation();
+                        toggleItem(item.id);
+                    });
+
+                    row.addEventListener("click", (e) => {
+                        if (e.target !== checkbox) {
+                            toggleItem(item.id);
+                        }
+                    });
+
+                    // Hover events voor Tooltip
+                    row.addEventListener("mouseenter", (e) => showTooltip(item, e));
+                    row.addEventListener("mousemove", (e) => moveTooltip(e));
+                    row.addEventListener("mouseleave", hideTooltip);
+
+                    // Touch ondersteuning voor mobiel (toon tooltip bij aanraken)
+                    row.addEventListener("touchstart", (e) => {
+                        if (e.touches && e.touches[0]) {
+                            showTooltip(item, e.touches[0]);
+                        }
+                    }, { passive: true });
+
+                    grid.appendChild(row);
+                });
+
+                section.appendChild(grid);
+                container.appendChild(section);
+            });
+
+            if (totalVisibleItems === 0) {
+                container.innerHTML = `
+                    <div class="parchment-card rounded-2xl p-8 text-center">
+                        <p class="text-lg font-bold text-[#5c361c]">Geen items gevonden</p>
+                        <p class="text-sm text-stone-600 mt-1">Probeer een andere zoekterm of zet "Verberg afgevinkt" uit.</p>
+                    </div>
+                `;
+            }
+
+            updateGlobalStats();
+        }
+
+        // Toggle item status
+        function toggleItem(id) {
+            if (checkedItems.has(id)) {
+                checkedItems.delete(id);
+            } else {
+                checkedItems.add(id);
+            }
+            saveProgress();
+            renderChecklist();
+        }
+
+        // Tooltip logica
+        const tooltipEl = document.getElementById("hover-tooltip");
+
+        function showTooltip(item, event) {
+            document.getElementById("tt-title").textContent = `${item.name} (${item.dutchName})`;
+            document.getElementById("tt-subtitle").textContent = `${item.category} • ${item.bundle}`;
+            document.getElementById("tt-season-badge").textContent = item.allSeasons.join(" / ");
+            document.getElementById("tt-how").textContent = item.how;
+
+            const extraEl = document.getElementById("tt-extra");
+            if (item.extra) {
+                extraEl.textContent = `💡 Tip: ${item.extra}`;
+                extraEl.classList.remove("hidden");
+            } else {
+                extraEl.classList.add("hidden");
+            }
+
+            tooltipEl.classList.remove("hidden");
+            // Kleine timeout zodat afmetingen berekend kunnen worden
+            requestAnimationFrame(() => {
+                tooltipEl.classList.remove("opacity-0");
+                moveTooltip(event);
+            });
+        }
+
+        function moveTooltip(event) {
+            if (tooltipEl.classList.contains("hidden")) return;
+
+            const padding = 16;
+            const ttRect = tooltipEl.getBoundingClientRect();
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+
+            let left = event.clientX + 16;
+            let top = event.clientY + 16;
+
+            // Voorkom dat tooltip rechts buiten het scherm valt
+            if (left + ttRect.width + padding > vw) {
+                left = Math.max(padding, event.clientX - ttRect.width - 16);
+            }
+
+            // Voorkom dat tooltip onderaan buiten het scherm valt
+            if (top + ttRect.height + padding > vh) {
+                top = Math.max(padding, event.clientY - ttRect.height - 16);
+            }
+
+            tooltipEl.style.left = `${left}px`;
+            tooltipEl.style.top = `${top}px`;
+        }
+
+        function hideTooltip() {
+            tooltipEl.classList.add("opacity-0");
+            tooltipEl.classList.add("hidden");
+        }
+
+        // Verberg tooltip bij scrollen of tikken buiten items op mobiel
+        window.addEventListener("scroll", hideTooltip, { passive: true });
+        document.addEventListener("touchstart", (e) => {
+            if (!e.target.closest(".item-row")) {
+                hideTooltip();
+            }
+        }, { passive: true });
+
+        // Event listeners voor filters & tabs
+        document.querySelectorAll(".season-tab").forEach(btn => {
+            btn.addEventListener("click", () => {
+                activeSeasonFilter = btn.dataset.season;
+
+                // Update actieve tab styling
+                document.querySelectorAll(".season-tab").forEach(b => {
+                    b.classList.remove("ring-2", "ring-[#5c361c]", "scale-[1.02]");
+                });
+                btn.classList.add("ring-2", "ring-[#5c361c]", "scale-[1.02]");
+
+                renderChecklist();
+            });
+        });
+
+        document.getElementById("search-input").addEventListener("input", (e) => {
+            searchQuery = e.target.value;
+            renderChecklist();
+        });
+
+        document.getElementById("hide-completed-toggle").addEventListener("change", (e) => {
+            hideCompleted = e.target.checked;
+            renderChecklist();
+        });
+
+        // Reset modal logica
+        const resetModal = document.getElementById("reset-modal");
+        document.getElementById("reset-btn").addEventListener("click", () => {
+            resetModal.classList.remove("hidden");
+            resetModal.classList.add("flex");
+        });
+
+        document.getElementById("cancel-reset-btn").addEventListener("click", () => {
+            resetModal.classList.add("hidden");
+            resetModal.classList.remove("flex");
+        });
+
+        document.getElementById("confirm-reset-btn").addEventListener("click", () => {
+            checkedItems.clear();
+            saveProgress();
+            renderChecklist();
+            resetModal.classList.add("hidden");
+            resetModal.classList.remove("flex");
+        });
+
+        // Backup / Overzetten modal logica
+        const backupModal = document.getElementById("backup-modal");
+        const exportInput = document.getElementById("export-code-input");
+        const importInput = document.getElementById("import-code-input");
+        const copyFeedback = document.getElementById("copy-feedback");
+        const importFeedback = document.getElementById("import-feedback");
+
+        document.getElementById("backup-btn").addEventListener("click", () => {
+            exportInput.value = encodeProgressCode();
+            importInput.value = "";
+            copyFeedback.classList.add("hidden");
+            importFeedback.classList.add("hidden");
+            backupModal.classList.remove("hidden");
+            backupModal.classList.add("flex");
+        });
+
+        document.getElementById("close-backup-btn").addEventListener("click", () => {
+            backupModal.classList.add("hidden");
+            backupModal.classList.remove("flex");
+        });
+
+        document.getElementById("copy-code-btn").addEventListener("click", () => {
+            exportInput.select();
+            exportInput.setSelectionRange(0, 99999);
+            try {
+                document.execCommand("copy");
+                copyFeedback.classList.remove("hidden");
+            } catch (err) {
+                console.error("Kopiëren mislukt:", err);
+            }
+        });
+
+        document.getElementById("import-code-btn").addEventListener("click", () => {
+            const decoded = decodeProgressCode(importInput.value);
+            if (!decoded) {
+                importFeedback.textContent = "⚠️ Ongeldige code. Controleer of je de volledige code (beginnend met SDV1-) hebt geplakt.";
+                importFeedback.className = "text-xs font-semibold mt-1 text-rose-700";
+                importFeedback.classList.remove("hidden");
+                return;
+            }
+            checkedItems = decoded;
+            saveProgress();
+            renderChecklist();
+            exportInput.value = encodeProgressCode();
+            importFeedback.textContent = `✔ Voortgang hersteld (${checkedItems.size} items afgevinkt)!`;
+            importFeedback.className = "text-xs font-semibold mt-1 text-emerald-700";
+            importFeedback.classList.remove("hidden");
+        });
+
+        // Initialisatie
+        loadProgress();
+        renderChecklist();
+    </script>
+</body>
+</html>
